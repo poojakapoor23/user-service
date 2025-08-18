@@ -1,0 +1,63 @@
+package com.pooja.controller;
+import com.pooja.entity.User;
+import com.pooja.service.UserService;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+
+@WebMvcTest(UserRestController.class)
+class UserRestControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private UserService userService; // Mocking service layer
+
+    @Test
+    void shouldReturnUser_whenGetById() throws Exception {
+        // Arrange
+        User mockUser = new User();
+        mockUser.setId("123");
+        mockUser.setUsername("John");
+
+        Mockito.when(userService.getUserById(eq("123"))).thenReturn(mockUser);
+
+        // Act & Assert
+        mockMvc.perform(get("/users/{id}", "123"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("John"));
+    }
+    @Test
+    void shouldCreateUser_whenPostRequestIsValid() throws Exception {
+        // Arrange
+        User inputUser = new User();
+        inputUser.setUsername("John");
+
+        User savedUser = new User();
+        savedUser.setId("123");
+        savedUser.setUsername("John");
+
+        Mockito.when(userService.createUser(Mockito.any(User.class))).thenReturn(savedUser);
+
+        // Act & Assert
+        mockMvc.perform(post("/users")
+                .contentType("application/json")
+                .content("{\"username\": \"John\"}"))
+                .andExpect(status().isOk()) // or isCreated() if your controller returns 201
+                .andExpect(jsonPath("$.id").value("123"))
+                .andExpect(jsonPath("$.username").value("John"));
+    }
+
+}

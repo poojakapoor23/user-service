@@ -1,5 +1,6 @@
 package com.pooja.service.impl;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.pooja.model.User;
 import com.pooja.repository.UserRepository;
 import com.pooja.service.UserService;
@@ -52,8 +53,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(String id, User user) {
-//        user = repo.findById(id);
-//        com.pooja.entity.User userEntity = convertModel2Entity(user);
 
             if(repo.existsById(id)){
                 repo.save(convertModel2Entity(user));
@@ -64,7 +63,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteUser(String id) {
-        repo.deleteById(id);
+        try{
+            if(repo.existsById(id)){
+                repo.deleteById(id);
+                System.out.println("User Deleted Successfully");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+        System.out.println("User does not exist");
     }
 
     private static void convertEntity2Model(User userModel, com.pooja.entity.User userEntity) {
